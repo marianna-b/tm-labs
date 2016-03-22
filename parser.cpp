@@ -42,6 +42,7 @@ tree parser::V(){
     t.add_child(VPrime());
     return t;
   }
+  cout << "V fail" << endl;
   throw l.cur();
 }
 
@@ -66,6 +67,7 @@ tree parser::L(){
     t.add_child(LPrime());
     return t;
   }
+  cout << "L fail" << endl;
   throw l.cur();
 }
 
@@ -76,6 +78,7 @@ tree parser::N(){
     cout << t.s << endl;
     return t;
   }
+  cout << "N fail" << endl;
   throw l.cur();
 }
   
@@ -86,12 +89,18 @@ tree parser::D(){
   }
   cout << "D (N, L, ;)" << endl;
   t.add_child(N());
-  l.next();
+  if (l.cur().type == token_type::whitespace) {
+    l.next();
+  } else { 
+    cout << "D fail" << endl;
+    throw l.cur();
+  }
   t.add_child(L());
   if (l.cur().type == token_type::semicolon) {
     t.add_child(tree(";"));
     l.next();
   } else { 
+    cout << "D fail" << endl;
     throw l.cur();
   }
   return t;
@@ -109,5 +118,6 @@ tree parser::S() {
     t.add_child(S());
     return t;
   }
+  cout << "S fail" << endl;
   throw l.cur();
 }
