@@ -39,8 +39,8 @@ string token::show() {
 lexer::lexer(){}
 lexer::lexer(stringstream& s) {
   stream = move(s);
-  pos = 0;
-  stream.get(ch);
+  pos = -1;
+  next_char();
 }
 
 bool lexer::is_space() {
