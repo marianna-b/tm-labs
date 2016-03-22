@@ -13,8 +13,6 @@ Tree_Widget::Tree_Widget(int x, int y, int w, int h, const char * label = 0)
   : Fl_Widget(x, y, w, h, label) {}
 
 pair<int, int> Tree_Widget::show_tree(tree& cur_t, int depth, int left_bound) {
-  cout << cur_t.s << endl;
-  
   vector<pair<int, int> > child_res;
   int curr_bound = left_bound;
   int new_depth = depth + 2 * h;
@@ -22,12 +20,9 @@ pair<int, int> Tree_Widget::show_tree(tree& cur_t, int depth, int left_bound) {
   for (int i = 0; i < cur_t.children.size(); ++i) {
     child_res.push_back(show_tree(cur_t.children[i], new_depth, curr_bound));
     curr_bound = child_res[i].first;
-    cout << cur_t.children[i].s << " ";
-    cout << curr_bound << " ";
   }
   if (cur_t.children.size() == 0)
     curr_bound = left_bound + w + ALIGN;
-  cout << endl;
   int d = (curr_bound - left_bound) / 2 + left_bound;
   
   for (int i = 0; i < cur_t.children.size(); ++i) {

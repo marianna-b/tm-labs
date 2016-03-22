@@ -17,6 +17,25 @@ token::token(token_type t, string str) {
   s = str;
 }
 
+
+string token::show() {
+ switch (type) {
+ case token_type::name:
+   return s; 
+ case token_type::whitespace:
+   return "blank";
+ case token_type::comma:
+   return ",";
+ case token_type::semicolon:
+   return ";";
+ case token_type::deref:
+   return "*";
+ case token_type::end:
+   return "$";
+ }
+}
+
+
 lexer::lexer(){}
 lexer::lexer(stringstream& s) {
   stream = move(s);

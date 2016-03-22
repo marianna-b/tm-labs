@@ -13,6 +13,7 @@ struct token {
   
   token(token_type);
   token(token_type, std::string);
+  std::string show();
 };
 
 struct lexer {
