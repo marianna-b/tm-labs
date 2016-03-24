@@ -40,8 +40,7 @@ pair<int, int> Tree_Widget::show_tree(tree& cur_t, int depth, int left_bound) {
 
   fl_color(FL_BLACK);
   fl_draw(cur_t.s.c_str(), lx, uy, w, h, FL_ALIGN_INSIDE, NULL, 0);
-  //Fl_Output* o = new Fl_Output(lx, uy, w, h);
-  //o->value("FUCK");
+
   return make_pair(curr_bound, d);
 }
 
@@ -52,11 +51,6 @@ void Tree_Widget::draw() {
   h = HEIGHT / (2 * d - 1);
   w = WIDTH / l - 2 * ALIGN;
   fl_color(FL_BLACK);
-  //Fl_Label *label = new Fl_Label();
-  //label->color = FL_BLACK;
-  //label->value = "FUCK";
-  //Fl_Text_Display( "FUCK");
-  //label.value = t.s.c_str();
   show_tree(t, 0, 0);
 }
 

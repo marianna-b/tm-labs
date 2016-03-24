@@ -14,8 +14,6 @@ void tree::add_child(tree child) {
 }
 
 int tree::count_depth() {
-  if (children.size() == 0)
-    return 1;
   int res = 0;
   for (int i = 0; i < (int)children.size(); ++i) {
     res = max(children[i].count_depth(), res);

@@ -33,6 +33,7 @@ string token::show() {
  case token_type::end:
    return "$";
  }
+ throw *this;
 }
 
 

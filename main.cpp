@@ -8,12 +8,12 @@ using namespace std;
 
 const int TESTC = 11;
 string tests[TESTC] = {
-  "int a, *b, ***c, d; int a, *b, * * *c , d;",
-  "int a, *b, ***c, d;",
   "int a;",
   "int *a;",
   "int a ;",
   "int * a ;",
+  "int a, *b, ***c, d; int a, *b, * * *c , d;",
+  "int a, *b, ***c, d;",
   "",
   "a;",
   "a a a;",
