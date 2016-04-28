@@ -20,15 +20,19 @@
 %type <string> expr
 %type <string> int_expr
 %type <string> bool_expr
+%type <string> list_expr
 
 %start start 
 
-%glr-parser
 %%
 
 start:
-    expr { result = $1; }
+      list_expr { result = $1; }
 ;
+
+list_expr:
+    {$$ = new std::string(""); }
+|   expr list_expr {$$ = new std::string(*($1) + "\n" + *($2)); delete $1; delete $2;}
 
 expr:
     IF bool_expr expr { $$ = new std::string("if " + *($2) + "{\n" + *($3)  + "\n}"); delete $2; delete $3; } 
