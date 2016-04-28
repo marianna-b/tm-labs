@@ -39,7 +39,7 @@ expr:
 
 int_expr:
     INTEGER { $$ = $1; }
-|   MINUS int_expr expr { $$ = new std::string(*($2) + " - " + *($3)); delete $2; delete $3; }
+|   MINUS int_expr int_expr { $$ = new std::string("(" + *($2) + " - " + *($3) + ")"); delete $2; delete $3; }
 |   PLUS int_expr int_expr { $$ = new std::string("(" + *($2) + " + " + *($3) + ")"); delete $2; delete $3; }
 |   MUL int_expr int_expr { $$ = new std::string("(" + *($2) + " * " + *($3) + ")"); delete $2; delete $3; }
 |   DIV int_expr int_expr { $$ = new std::string("(" + *($2) + " / " + *($3) + ")"); delete $2; delete $3; }
@@ -54,7 +54,7 @@ TRUE { $$ = new std::string("true"); }
 |   OR bool_expr bool_expr { $$ = new std::string("(" + *($2) + " or " + *($3) + ")"); delete $2; delete $3; }
 |   GT int_expr int_expr { $$ = new std::string("(" + *($2) + " > " + *($3) + ")"); delete $2; delete $3; }
 |   LT int_expr int_expr { $$ = new std::string("(" + *($2) + " < " + *($3) + ")"); delete $2; delete $3; }
-|   EQ int_expr int_expr { $$ = new std::string("(" + *($2) + " = " + *($3) + ")"); delete $2; delete $3; }
+|   EQ int_expr int_expr { $$ = new std::string("(" + *($2) + " == " + *($3) + ")"); delete $2; delete $3; }
 |   NEQ int_expr int_expr { $$ = new std::string("(" + *($2) + " != " + *($3) + ")"); delete $2; delete $3; }
 ;
 
