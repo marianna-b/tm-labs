@@ -15,7 +15,7 @@
 
 %token <string> VARIABLE INTEGER 
 %token EQ NEQ LT GT ASSIGN IF IFELSE PRINT FALSE TRUE
-%token PLUS MINUS MUL DIV NOT AND OR
+%token PLUS MINUS MUL DIV NOT AND OR EXP
 
 %type <string> expr
 %type <string> int_expr
@@ -47,6 +47,7 @@ int_expr:
 |   PLUS int_expr int_expr { $$ = new std::string("(" + *($2) + " + " + *($3) + ")"); delete $2; delete $3; }
 |   MUL int_expr int_expr { $$ = new std::string("(" + *($2) + " * " + *($3) + ")"); delete $2; delete $3; }
 |   DIV int_expr int_expr { $$ = new std::string("(" + *($2) + " / " + *($3) + ")"); delete $2; delete $3; }
+|   EXP int_expr int_expr { $$ = new std::string("(" + *($3) + "^" + *($2) + ")"); delete $2; delete $3; }
 |   VARIABLE { $$ = $1; }
 ;
 

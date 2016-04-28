@@ -32,6 +32,8 @@ string token::show() {
    return "*";
  case token_type::end:
    return "$";
+ case token_type::eq:
+   return "=";
  }
  throw *this;
 }
@@ -62,10 +64,8 @@ bool lexer::is_underscore() {
 
 void lexer::next() {
   if (is_space()) {
-    t = token(token_type::whitespace);
     while (is_space())
       next_char();
-    return; 
   }
   if (is_letter()) {
     string cur_str = "";
@@ -87,6 +87,10 @@ void lexer::next() {
     break;
   case ';':
     t = token(token_type::semicolon);
+    next_char();
+    break;
+  case '=':
+    t = token(token_type::eq);
     next_char();
     break;
   case 0:

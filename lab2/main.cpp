@@ -6,8 +6,13 @@
 #include "parser.h"
 using namespace std;
 
-const int TESTC = 11;
+const int TESTC = 1;
+const int TESTC2 = 11;
+
 string tests[TESTC] = {
+  "int a, b = c;"
+};
+string test[TESTC2] = {
   "int a;",
   "int *a;",
   "int a ;",

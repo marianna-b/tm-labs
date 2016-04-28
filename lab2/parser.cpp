@@ -18,6 +18,12 @@ tree parser::VPrime(){
     l.next();
     return t;
   }
+  if (l.cur().type == token_type::eq) {
+    t.add_child(tree("="));
+    l.next();
+    t.add_child(N());
+    return t;
+  }
   return t;
 }
   
@@ -77,11 +83,11 @@ tree parser::D(){
     l.next();
   }
   t.add_child(N());
-  if (l.cur().type == token_type::whitespace) {
+  /*if (l.cur().type == token_type::whitespace) {
     l.next();
   } else { 
     throw l.cur();
-  }
+    }*/
   t.add_child(L());
   if (l.cur().type == token_type::semicolon) {
     t.add_child(tree(";"));

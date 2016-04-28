@@ -16,3 +16,4 @@ if && true false print b
 if || true false print b
 ifelse > + a b * 5 - 6 7 print / a * + b - 7 10 5 = t_t - 67 19
 ifelse && > + a b * 5 - 6 7 < - a b / 5 + 6 7 print a = a 5 
+= a ^ 4 5

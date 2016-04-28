@@ -63,7 +63,8 @@ extern int yydebug;
     DIV = 273,
     NOT = 274,
     AND = 275,
-    OR = 276
+    OR = 276,
+    EXP = 277
   };
 #endif
 
@@ -76,7 +77,7 @@ union YYSTYPE
 
     std::string *string;
 
-#line 80 "parser.hpp" /* yacc.c:1909  */
+#line 81 "parser.hpp" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

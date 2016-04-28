@@ -22,6 +22,7 @@ string_const {character}+
 "true"                  return TRUE;
 [a-zA-Z_][a-zA-Z0-9_]*  SAVE_TOKEN; return VARIABLE;
 [0-9]+                  SAVE_TOKEN; return INTEGER;
+"^"                     return EXP;
 "="                     return ASSIGN;
 "=="                    return EQ;
 "!="                    return NEQ;

@@ -3,7 +3,7 @@
 #include <string>
 #include <sstream>
 
-enum class token_type {name, whitespace, comma, semicolon, deref, end};
+enum class token_type {name, whitespace, comma, semicolon, deref, end, eq};
 
 struct token {
   token_type type;
