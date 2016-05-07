@@ -1,0 +1,19 @@
+%{ blalblalba<>llaba %}
+
+%token %<void%> AAA
+%token %<void%> BBB
+
+%type %<void%> aaaa
+%type %<void%> bbbb
+
+%%
+
+aaaa:
+AAA bbbb AAA {*&(*&$)#(@*#@Q>}
+| bbbb {ksjd;lfks kjfd;lsadkf } |;
+
+bbbb:
+BBB { kj;lkj;lkj;lkj }
+|;
+%%
+
