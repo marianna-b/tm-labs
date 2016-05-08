@@ -1,0 +1,37 @@
+%{#include <string>
+#include "tree.h"
+%}
+
+%token %<std::string%> : _STR VAR
+%token %<void%> COMMA 
+%token %<void%> SEMICOLON  
+%token %<void%> DEREF 
+
+%type %<tree%> start[]
+%type %<tree%> decl[]
+%type %<tree%> list[]
+%type %<tree%> list_end[]
+%type %<tree%> var[]
+
+%%
+
+start:
+{ res = tree("start"); }
+| decl start { res = tree("start"); res.add_child(_s1); res.add_child(_s2); }|;
+
+decl:
+VAR list SEMICOLON { res = tree("decl"); res.add_child(_s1); res.add_child(_s2); } |;
+
+var:
+VAR { res = tree("name: " + _s1); }
+| DEREF var {  res = tree("var"); res.add_child("*"); res.add_child(_s2); }|;
+
+list:
+var list_end { res = tree("list"); res.add_child(_s1); res.add_child(_s2); } |;
+
+list_end:
+{ res = tree("list_end"); }
+| COMMA list {res = tree("list_end"); res.add_child(","); res.add_child(_s2); } |;
+
+%%
+

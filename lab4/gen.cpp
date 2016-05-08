@@ -104,6 +104,11 @@ string parsed_info::generate_file() {
   s += "\n";
   s += "\n";
 
+  s += (*begin).substr(2, (*begin).size() - 4);
+
+  s += "\n";
+  s += "\n";
+  
   set<pair<string, string> > decl;
   for (auto tok : (*tokens)) {
     string name = tok.second.second;
@@ -169,7 +174,7 @@ string parsed_info::gen_function(string name) {
     }
   }
   s += ") {\n";
-
+  s += "  " + res.substr(2, (int)res.size() - 4) + " res;";
   string eps_handling = "";
   for (int i = 0; i < (int)rules.size(); i++) {
     bool has_eps = false;
@@ -186,6 +191,8 @@ string parsed_info::gen_function(string name) {
       if (t.is_token) {
         string type = (*tokens)[t.name].first.substr(2, (*tokens)[t.name].first.size() - 4);
         string name = (*tokens)[t.name].second;
+        c += "    if (curr != " + t.name + ")\n";
+        c += "      throw " + t.name + ";\n";
         if (type != "void") {
           c += "    ";
           c += type + " _s" + to_str(j + 1) + " = " + name + ";\n";
@@ -212,7 +219,8 @@ string parsed_info::gen_function(string name) {
         c +=  ");\n";
       }
     }
-    c += "\n    " + rules[i].code;
+    c += "\n    " + rules[i].code.substr(1, rules[i].code.size() - 2);
+    c += "\n    return res;";
     if (has_eps) {
       eps_handling = c;
     }
