@@ -4,21 +4,19 @@
 #include <unistd.h>
 #include "parser.h"
 #define SAVE_TOKEN result = new std::string(yytext, yyleng)
- extern token t;
- extern int yyFlexLexer::yywrap() { }
 %}
 
-digit [0-9]
-character [a-zA-Z]
-int_const {digit}+
-string_const {character}+
-
+%option noyywrap
 %%
 
-[ \t\n]                 ;
-[a-zA-Z][a-zA-Z0-9_]*   ;
-.                       printf("Unknown token! %s", std::string(yytext, yyleng)); yyterminate();
 
+[ \t\n]                 ;
+[a-zA-Z][a-zA-Z0-9_]*   _STR = std::string(yytext, yyleng); return VAR;
+","                     return COMMA;
+"*"                     return DEREF;
+";"                     return SEMICOLON;
+<<EOF>>                 return 0;
+.                       printf("Unknown token! %s", std::string(yytext, yyleng)); yyterminate();
 %%
 
 

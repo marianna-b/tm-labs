@@ -104,7 +104,6 @@ string parsed_info::generate_file() {
   s += "\n";
   s += "\n";
 
-  s += (*begin).substr(2, (*begin).size() - 4);
 
   s += "\n";
   s += "\n";
@@ -122,17 +121,14 @@ string parsed_info::generate_file() {
     s += tok.second + " " + tok.first + ";\n";
   }
   s += "\n";
-  s += "parser::parser(){\n";
-  s += "  lexer = new yyFlexLexer();\n";
-  s += "  curr = lexer->yylex();\n";
-  s += "}\n";
+  s += "extern int yylex();";
   s += "\n";
-  s += "parser::~parser(){\n";
-  s += "  delete lexer;\n";
+  s += "parser::parser(){\n";
+  s += "  curr = yylex();\n";
   s += "}\n";
   s += "\n";
   s += "void parser::next(){\n";
-  s += "  curr = lexer->yylex();\n";
+  s += "  curr = yylex();\n";
   s += "}\n\n";
 
   for (auto r : (*grammar)) {
@@ -146,7 +142,7 @@ string gen_if(set<string> s) {
   bool is_first = true;
   for (auto t : s) {
     if (!is_first) {
-      b += " && ";
+      b += " || ";
     } else {
       is_first = false;
     }
@@ -233,6 +229,7 @@ string parsed_info::gen_function(string name) {
     string a = gen_if(follow[name]);
     s += "\n  " + a + " {\n" + eps_handling + "\n  }\n";
   }
+  s += "  throw curr;\n";
   s += "}\n";
   return s;
 }
@@ -272,10 +269,8 @@ string parsed_info::generate_header() {
   string s = "";
   s += "#ifndef PARSER_H\n";
   s += "#define PARSER_H\n";
-  s += "#if ! defined(yyFlexLexerOnce)\n";
-  s += "#include <FlexLexer.h>\n";
-  s += "#endif\n\n";
-
+  s += (*begin).substr(2, (*begin).size() - 4);
+  
   for (auto tok : (*tokens)) {
     string name = tok.second.second;
     string type = tok.second.first.substr(2, (int)tok.second.first.size() - 4);
@@ -288,15 +283,13 @@ string parsed_info::generate_header() {
   s += gen_enum() + "\n";
   
   s += "struct parser {\n";
-  s += "  FlexLexer* lexer;\n";
   s += "  int curr;\n";
   s += "  parser();\n";
   s += "  void next();\n";
-  s += "  ~parser();\n";
 
   s += gen_func_list() + "\n";
 
-  s += "}\n";
+  s += "};\n";
   s += "#endif";
   return s;
 }

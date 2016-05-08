@@ -24,14 +24,14 @@ VAR list SEMICOLON { res = tree("decl"); res.add_child(_s1); res.add_child(_s2);
 
 var:
 VAR { res = tree("name: " + _s1); }
-| DEREF var {  res = tree("var"); res.add_child("*"); res.add_child(_s2); }|;
+| DEREF var {  res = tree("var"); res.add_child(tree("*")); res.add_child(_s2); }|;
 
 list:
 var list_end { res = tree("list"); res.add_child(_s1); res.add_child(_s2); } |;
 
 list_end:
 { res = tree("list_end"); }
-| COMMA list {res = tree("list_end"); res.add_child(","); res.add_child(_s2); } |;
+| COMMA list {res = tree("list_end"); res.add_child(tree(",")); res.add_child(_s2); } |;
 
 %%
 
