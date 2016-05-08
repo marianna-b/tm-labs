@@ -38,7 +38,7 @@ string rule::show() {
 parsed_info::parsed_info(string* b, string* e, map<string, pair<string, string> >* tok, map<string, pair<string, vector<string> > >* nont, map<string, vector<rule> >* gr) {
   begin = b;
   end = e;
-  token = tok;
+  tokens = tok;
   nonterm = nont;
   grammar = gr;
   gen_first();
@@ -50,7 +50,7 @@ string parsed_info::generate() {
   s += *begin + "\n";
   s += *end + "\n";
 
-  for (auto i : (*token)) 
+  for (auto i : (*tokens)) 
     s += i.first + " " + i.second.first + " " + i.second.second + "\n";
   for (auto i : (*nonterm)) {
     s += i.first + " " + i.second.first + "\n";
@@ -87,153 +87,153 @@ string parsed_info::generate() {
   return s;
 }
 
-bool is_token(string a) {
-  if (a == "")
-    return false;
-  if (a[0] <= 'Z' && a[0] >= 'A')
-    return true;
-  if (a == "$")
-    return true;
-  return false;
-}
-
-bool parsed_info::add_firsts(string name, rule& r, int idx) {
-  string a = r.terms[idx].name;
-  bool changed = false;
-  bool eps = false;
-
-  if (r.terms[idx].is_token) {
-    if (first[name].count(a) == 0) {
-      first[name].insert(a);
-      return true;
-    }
-    return false;
-  } 
-  for (auto f : first[a]) {
-    if (f != "") {
-      if (first[name].count(f) == 0) {
-        changed = true;
-        first[name].insert(f);
-      }
-    } else {
-      eps = true;
-    }
-  }
-  if (eps) {
-    if (idx + 1 < (int)r.terms.size()) {
-      changed |= add_firsts(name, r, idx + 1);
-    } else {
-      if (first[name].count("") == 0) {
-        changed = true;
-        first[name].insert("");
-      }
-    }
-  }
-  return changed;
-}
-
-
-void parsed_info::gen_first() {
-  bool changed = true;
-  while (changed) {
-    changed = false;
-    for (auto g : (*grammar)) {
-      string name = g.first;
-      for (auto rule : g.second) {
-        if (rule.terms.empty()) {
-          if (first[name].count("") == 0) {
-            changed = true;
-            first[name].insert("");
-          }
-          continue;
-        }
-        changed |= add_firsts(name, rule, 0);
-      }
-    }
-  }
-}
-
-void parsed_info::gen_follow() {
-  follow["start"].insert("$"); 
-  bool changed = true;
-
-  while (changed) {
-    changed = false;
-    for (auto g : (*grammar)) {
-      string name = g.first;
-      
-      for (auto rule : g.second) {
-        for (int i = 0; i < (int)rule.terms.size(); ++i) {
-          if (rule.terms[i].is_token) {
-            continue;
-          }
-          int j = i + 1;
-          for (j; j < (int)rule.terms.size(); ++j) {
-            if (rule.terms[j].is_token)
-              break;
-            if (follow[rule.terms[j].name].count("") == 0) 
-              break;
-          }
-          if (j == (int)rule.terms.size()) {
-            for (auto elem : follow[name]) {
-              if (follow[rule.terms[i].name].count(elem) == 0) {
-                follow[rule.terms[i].name].insert(elem);
-                changed = true;
-              }
-            }
-          }
-          if (i + 1 == (int)rule.terms.size()) {
-            continue;
-          }
-          changed |= add_follows(rule.terms[i].name, rule, i + 1);
-        }
-      }
-    }
-  }
-}
-
-bool parsed_info::add_follows(string name, rule& r, int idx) {
-  bool changed = false;
-  bool eps = false;
-  if (r.terms[idx].is_token) {
-    if (follow[name].count(r.terms[idx].name) == 0) {
-      follow[name].insert(r.terms[idx].name);
-      changed = true;
-    }
-    return changed;
-  }
-  for (auto f : first[r.terms[idx].name]) {
-    if (f != "") {
-      if (follow[name].count(f) == 0) {
-        follow[name].insert(f);
-        changed = true;
-      }
-    } else {
-      eps = true;
-    }
-  }
-  if (eps) {
-    if (idx + 1 < (int)r.terms.size())
-      changed |= add_follows(name, r, idx + 1);
-  }
-  return changed;
-}
-
-string parsed_info::generate_file() {
-  return "";
-}
-
 string to_str(int x) {
   ostringstream convert;
   convert << x;
   return convert.str();
 }
 
+
+string parsed_info::generate_file() {
+  string s = "";
+
+  s += "#include ";
+  s += '"';
+  s += "parser.h";
+  s += '"';
+  s += "\n";
+  s += "\n";
+
+  set<pair<string, string> > decl;
+  for (auto tok : (*tokens)) {
+    string name = tok.second.second;
+    string type = tok.second.first.substr(2, (int)tok.second.first.size() - 4);
+    if (name != "" && type != "void") {
+      decl.insert(make_pair(name, type));
+    } 
+  }
+  
+  for (auto tok : decl) {
+    s += tok.second + " " + tok.first + ";\n";
+  }
+  s += "\n";
+  s += "parser::parser(){\n";
+  s += "  lexer = new yyFlexLexer();\n";
+  s += "  curr = lexer->yylex();\n";
+  s += "}\n";
+  s += "\n";
+  s += "parser::~parser(){\n";
+  s += "  delete lexer;\n";
+  s += "}\n";
+  s += "\n";
+  s += "void parser::next(){\n";
+  s += "  curr = lexer->yylex();\n";
+  s += "}\n\n";
+
+  for (auto r : (*grammar)) {
+    s += gen_function(r.first) + "\n";
+  }
+  return s;
+}
+
+string gen_if(set<string> s) {
+  string b = "if (";
+  bool is_first = true;
+  for (auto t : s) {
+    if (!is_first) {
+      b += " && ";
+    } else {
+      is_first = false;
+    }
+    if (t != "$")
+      b += "(curr == " + t + ")";
+    else
+      b += "(curr == 0)";
+  }
+  b += ")";
+  return b;
+}
+
+string parsed_info::gen_function(string name) {
+  string s = "";
+  string res = (*nonterm)[name].first;
+  vector<string> arg = (*nonterm)[name].second;
+  vector<rule> rules = (*grammar)[name];
+  s += res.substr(2, (int)res.size() - 4) + " ";
+  s += "parser::" + name + "(";
+  for (int j = 0; j < arg.size(); j++) {
+    s += "  ";
+    s += arg[j].substr(2, (int)arg[j].size() - 4) + " _h" + to_str(j + 1);
+    if (j + 1 < arg.size()) {
+      s += ", ";
+    }
+  }
+  s += ") {\n";
+
+  string eps_handling = "";
+  for (int i = 0; i < (int)rules.size(); i++) {
+    bool has_eps = false;
+    set<string> f = get_first(rules[i].terms);
+    if (f.count("") != 0) {
+      has_eps = true;
+      f.erase("");
+    }
+    
+    string b = gen_if(f);
+    string c = "";
+    for (int j = 0; j < (int)rules[i].terms.size(); j++) {
+      token t = rules[i].terms[j];
+      if (t.is_token) {
+        string type = (*tokens)[t.name].first.substr(2, (*tokens)[t.name].first.size() - 4);
+        string name = (*tokens)[t.name].second;
+        if (type != "void") {
+          c += "    ";
+          c += type + " _s" + to_str(j + 1) + " = " + name + ";\n";
+        }
+        c += "    ";
+        c += "next();\n";
+      } else {
+        string res = (*nonterm)[t.name].first.substr(2, (*nonterm)[t.name].first.size() - 4);
+        vector <string> arg = t.arg;
+        if (res != "void") {
+          c += "    ";
+          c += res + " _s" + to_str(j + 1) + " = " + t.name + "(";
+        } else {
+          c += "    ";
+          c += t.name + "(";
+        } 
+        for (int k = 0; k < (int)arg.size(); ++k) {
+          if (k + 1 < (int)arg.size()) {
+            c += arg[k] + ", ";
+          } else {
+            c += arg[k];
+          }
+        }
+        c +=  ");\n";
+      }
+    }
+    c += "\n    " + rules[i].code;
+    if (has_eps) {
+      eps_handling = c;
+    }
+    if (!f.empty()) {
+      s += "\n  " + b + " {\n" + c + "\n  }\n";
+    }
+
+  }
+  if (eps_handling.size() > 0) {
+    string a = gen_if(follow[name]);
+    s += "\n  " + a + " {\n" + eps_handling + "\n  }\n";
+  }
+  s += "}\n";
+  return s;
+}
+
 string parsed_info::gen_enum() {
   string s = "";
   s += "enum token_symb {\n";
   int ans = 270;
-  for (auto i : (*token)) {
+  for (auto i : (*tokens)) {
     s += i.first + " = " + to_str(ans) + ",\n";
     ans--;
   }
@@ -260,7 +260,6 @@ string parsed_info::gen_func_list() {
   return s;
 }
 
-
 string parsed_info::generate_header() {
   string s = "";
   s += "#ifndef PARSER_H\n";
@@ -269,7 +268,7 @@ string parsed_info::generate_header() {
   s += "#include <FlexLexer.h>\n";
   s += "#endif\n\n";
 
-  for (auto tok : (*token)) {
+  for (auto tok : (*tokens)) {
     string name = tok.second.second;
     string type = tok.second.first.substr(2, (int)tok.second.first.size() - 4);
     if (name != "" && type != "void") {
@@ -281,10 +280,11 @@ string parsed_info::generate_header() {
   s += gen_enum() + "\n";
   
   s += "struct parser {\n";
-  s += "  FlexLexer* lexer = new yyFlexLexer();\n";
-  s += "  token_symb curr;\n";
-  s += "  parser()\n";
-  s += "  ~parser()\n";
+  s += "  FlexLexer* lexer;\n";
+  s += "  int curr;\n";
+  s += "  parser();\n";
+  s += "  void next();\n";
+  s += "  ~parser();\n";
 
   s += gen_func_list() + "\n";
 
@@ -296,7 +296,7 @@ string parsed_info::generate_header() {
 parsed_info::~parsed_info() {
   delete begin;
   delete end;
-  delete token;
+  delete tokens;
   delete nonterm;
   delete grammar;
 }

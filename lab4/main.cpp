@@ -6,6 +6,8 @@ extern parsed_info* result;
 int main( int /* argc */, char** /* argv */ )
 {
   yyparse();
-  std::cout << result->generate_header();
+  //std::cout << result->generate();
+  //std::cout << "\n=====================================================\n";
+  std::cout << result->generate_file();
   return 0;
 }
