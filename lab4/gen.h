@@ -24,7 +24,7 @@ struct rule {
 };
 
 struct parsed_info {
-  parsed_info(std::string*, std::string*, std::map<std::string, std::string>*, std::map<std::string, std::pair<std::string, std::vector<std::string> > >*, std::map<std::string, std::vector<rule> >*);
+  parsed_info(std::string*, std::string*, std::map<std::string, std::pair<std::string, std::string> >*, std::map<std::string, std::pair<std::string, std::vector<std::string> > >*, std::map<std::string, std::vector<rule> >*);
 
   std::string generate();
   std::string generate_file();
@@ -33,11 +33,13 @@ struct parsed_info {
   ~parsed_info();
 private:
   std::string *begin, *end;
-  std::map<std::string, std::string> *token;
+  std::map<std::string, std::pair<std::string, std::string>> *token;
   std::map<std::string, std::pair<std::string, std::vector<std::string> > > *nonterm;
   std::map<std::string, std::vector<rule> > *grammar;
   std::map<std::string, std::set<std::string> > first;
   std::map<std::string, std::set<std::string> > follow;
+  std::string gen_enum();
+  std::string gen_func_list();
   void gen_first();
   void gen_follow();
   bool add_firsts(std::string, rule&, int);

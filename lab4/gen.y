@@ -9,7 +9,7 @@
 
 %union {
     std::string *string;
-    std::map<std::string, std::string> *types;
+    std::map<std::string, std::pair<std::string, std::string> > *types;
     std::map<std::string, std::pair<std::string, std::vector<std::string> > > *nonterms;
     std::map<std::string, std::vector<rule> > *gram_type;
     std::vector<std::string> *list;
@@ -17,7 +17,7 @@
     std::vector<rule> *rulelist;
 }
 
-%token <string> NONTERM TOKEN TYPE_NAME INSERT CODE ARG
+%token <string> NONTERM TOKEN TYPE_NAME INSERT CODE ARG GLOB
 %token TYPE TOKEN_SYMB SEP OR SEMICOLON COLON LEFTBR RIGHTBR
 
 %type <gram_type> grammar
@@ -26,6 +26,7 @@
 %type <list> args
 %type <list> type_list
 %type <string> insert 
+%type <string> token_name 
 %type <types> token_list
 %type <nonterms> nonterm_list
 %type <rulelist> rule_list
@@ -41,10 +42,17 @@ start:
 insert:
     { $$ = new std::string(""); }
 |   INSERT { $$ = $1; }
+;
 
 token_list:
-    { $$ = new std::map<std::string, std::string>(); }
-|   TOKEN_SYMB TYPE_NAME TOKEN token_list { ($4)->insert(std::pair<std::string, std::string>(*($3), *($2))); $$ = $4; delete ($2); delete ($3); }
+    { $$ = new std::map<std::string, std::pair<std::string, std::string> >(); }
+|   TOKEN_SYMB TYPE_NAME token_name TOKEN token_list { ($5)->insert(std::pair<std::string, std::pair<std::string, std::string> >(*($4), std::pair<std::string, std::string> (*($2), *($3)))); $$ = $5; delete ($2); delete ($3); delete ($4); }
+;
+
+token_name:
+    { $$ = new std::string(); }
+|   COLON GLOB { $$ = $2; }
+;
 
 nonterm_list:
     { $$ = new std::map<std::string, std::pair<std::string, std::vector<std::string> > >(); } 

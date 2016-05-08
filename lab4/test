@@ -1,11 +1,11 @@
 %{ blalblalba<>llaba %}
 
-%token %<void%> AAA
+%token %<int%> : _A AAA
 %token %<void%> BBB
 
-%type %<void%> aaaa[ %<void%> %<int%>]
-%type %<void%> bbbb[]
-%type %<void%> start[%<void%>]
+%type %<int%> aaaa[ %<void%> %<int%>]
+%type %<int%> bbbb[]
+%type %<int%> start[%<void%>]
 
 %%
 

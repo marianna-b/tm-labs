@@ -1,6 +1,7 @@
 #include "gen.h"
 #include <iostream>
 #include <algorithm>
+#include <sstream>
 using namespace std;
 
 token::token(string n) {
@@ -34,7 +35,7 @@ string rule::show() {
   return s;
 }
 
-parsed_info::parsed_info(string* b, string* e, map<string, string>* tok, map<string, pair<string, vector<string> > >* nont, map<string, vector<rule> >* gr) {
+parsed_info::parsed_info(string* b, string* e, map<string, pair<string, string> >* tok, map<string, pair<string, vector<string> > >* nont, map<string, vector<rule> >* gr) {
   begin = b;
   end = e;
   token = tok;
@@ -50,7 +51,7 @@ string parsed_info::generate() {
   s += *end + "\n";
 
   for (auto i : (*token)) 
-    s += i.first + " " + i.second + "\n";
+    s += i.first + " " + i.second.first + " " + i.second.second + "\n";
   for (auto i : (*nonterm)) {
     s += i.first + " " + i.second.first + "\n";
     s += "[";
@@ -222,8 +223,74 @@ string parsed_info::generate_file() {
   return "";
 }
 
+string to_str(int x) {
+  ostringstream convert;
+  convert << x;
+  return convert.str();
+}
+
+string parsed_info::gen_enum() {
+  string s = "";
+  s += "enum token_symb {\n";
+  int ans = 270;
+  for (auto i : (*token)) {
+    s += i.first + " = " + to_str(ans) + ",\n";
+    ans--;
+  }
+  s += "};\n";
+  return s;
+}
+
+string parsed_info::gen_func_list() {
+  string s = "";
+  for (auto i : (*nonterm)) {
+    string name = i.first;
+    string res = i.second.first;
+    vector<string> arg = i.second.second;
+    s += "  " + res.substr(2, (int)res.size() - 4) + " ";
+    s += name + "(";
+    for (int j = 0; j < arg.size(); j++) {
+      s += arg[j].substr(2, (int)arg[j].size() - 4) + " _h" + to_str(j + 1);
+      if (j + 1 < arg.size()) {
+        s += ", ";
+      }
+    }
+    s += ");\n";
+  }
+  return s;
+}
+
+
 string parsed_info::generate_header() {
-  return "";
+  string s = "";
+  s += "#ifndef PARSER_H\n";
+  s += "#define PARSER_H\n";
+  s += "#if ! defined(yyFlexLexerOnce)\n";
+  s += "#include <FlexLexer.h>\n";
+  s += "#endif\n\n";
+
+  for (auto tok : (*token)) {
+    string name = tok.second.second;
+    string type = tok.second.first.substr(2, (int)tok.second.first.size() - 4);
+    if (name != "" && type != "void") {
+      s += "extern " + type + " " + name + ";\n";
+    } 
+  }
+  
+  s += "\n";
+  s += gen_enum() + "\n";
+  
+  s += "struct parser {\n";
+  s += "  FlexLexer* lexer = new yyFlexLexer();\n";
+  s += "  token_symb curr;\n";
+  s += "  parser()\n";
+  s += "  ~parser()\n";
+
+  s += gen_func_list() + "\n";
+
+  s += "}\n";
+  s += "#endif";
+  return s;
 }
   
 parsed_info::~parsed_info() {

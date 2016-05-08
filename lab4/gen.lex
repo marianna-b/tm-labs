@@ -21,6 +21,7 @@ extern "C" int yywrap() { }
 [a-z][a-z0-9_]*         SAVE_TOKEN; return NONTERM;
 [A-Z][A-Z0-9_]*         SAVE_TOKEN; return TOKEN;
 _(h|s)[0-9]+            SAVE_TOKEN; return ARG;
+_[A-Z][A-Z0-9_]*        SAVE_TOKEN; return GLOB;
 "%<"[^%]*"%>"           SAVE_TOKEN; return TYPE_NAME;
 "%{".*"%}"              SAVE_TOKEN; return INSERT;
 "{".*"}"                SAVE_TOKEN; return CODE;
