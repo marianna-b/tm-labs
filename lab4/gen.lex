@@ -16,8 +16,11 @@ extern "C" int yywrap() { }
 "|"                     return OR;
 ";"                     return SEMICOLON;
 ":"                     return COLON;
+"["                     return LEFTBR;
+"]"                     return RIGHTBR;
 [a-z][a-z0-9_]*         SAVE_TOKEN; return NONTERM;
 [A-Z][A-Z0-9_]*         SAVE_TOKEN; return TOKEN;
+_(h|s)[0-9]+            SAVE_TOKEN; return ARG;
 "%<"[^%]*"%>"           SAVE_TOKEN; return TYPE_NAME;
 "%{".*"%}"              SAVE_TOKEN; return INSERT;
 "{".*"}"                SAVE_TOKEN; return CODE;

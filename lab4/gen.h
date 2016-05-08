@@ -6,15 +6,25 @@
 #include <map>
 #include <set>
 
+struct token {
+  bool is_token;
+  std::string name;
+  std::vector<std::string> arg;
+
+  token(std::string);
+  token(std::string, std::vector<std::string>);
+  
+};
+
 struct rule {
-  std::vector<std::string> terms;
+  std::vector<token> terms;
   std::string code;
   std::string show();
-  rule(std::vector<std::string>, std::string);
+  rule(std::vector<token>, std::string);
 };
 
 struct parsed_info {
-  parsed_info(std::string*, std::string*, std::map<std::string, std::string>*, std::map<std::string, std::string>*, std::map<std::string, std::vector<rule> >*);
+  parsed_info(std::string*, std::string*, std::map<std::string, std::string>*, std::map<std::string, std::pair<std::string, std::vector<std::string> > >*, std::map<std::string, std::vector<rule> >*);
 
   std::string generate();
   std::string generate_file();
@@ -23,7 +33,8 @@ struct parsed_info {
   ~parsed_info();
 private:
   std::string *begin, *end;
-  std::map<std::string, std::string> *token, *nonterm;
+  std::map<std::string, std::string> *token;
+  std::map<std::string, std::pair<std::string, std::vector<std::string> > > *nonterm;
   std::map<std::string, std::vector<rule> > *grammar;
   std::map<std::string, std::set<std::string> > first;
   std::map<std::string, std::set<std::string> > follow;

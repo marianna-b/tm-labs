@@ -3,8 +3,19 @@
 #include <algorithm>
 using namespace std;
 
+token::token(string n) {
+  name = n;
+  is_token = true;
+}
 
-rule::rule(vector<string> t, string c) {
+token::token(string n, vector<string> a) {
+  name = n;
+  is_token = false;
+  arg = a;
+  reverse(arg.begin(), arg.end());
+}
+
+rule::rule(vector<token> t, string c) {
   terms = t;
   reverse(terms.begin(), terms.end());
   code = c;
@@ -13,13 +24,17 @@ rule::rule(vector<string> t, string c) {
 string rule::show() {
   string s = "";
   for (auto i : terms) {
-    s += i + " ";
+    s += i.name + " [";
+    for (auto j : i.arg) {
+      s += j + " ";
+    }
+    s += "] ";
   }
   s += code;
   return s;
 }
 
-parsed_info::parsed_info(string* b, string* e, map<string, string>* tok, map<string, string>* nont, map<string, vector<rule> >* gr) {
+parsed_info::parsed_info(string* b, string* e, map<string, string>* tok, map<string, pair<string, vector<string> > >* nont, map<string, vector<rule> >* gr) {
   begin = b;
   end = e;
   token = tok;
@@ -36,15 +51,20 @@ string parsed_info::generate() {
 
   for (auto i : (*token)) 
     s += i.first + " " + i.second + "\n";
-  for (auto i : (*nonterm)) 
-    s += i.first + " " + i.second + "\n";
+  for (auto i : (*nonterm)) {
+    s += i.first + " " + i.second.first + "\n";
+    s += "[";
+    for (auto j : i.second.second)
+      s += j + " ";
+    s += "]\n";
+  }
   for (auto i : (*grammar)) {
     s += i.first + "\n";
     for (auto j : i.second) 
       s += j.show() + "\n";
   }
 
-  s += "\n\n\n";
+  s += "\n\nfirst\n";
 
   for (auto i : first) {
     s += i.first + "\n";
@@ -55,7 +75,7 @@ string parsed_info::generate() {
         s += "eps\n"; 
   }
 
-  s += "\n";
+  s += "\nfollow\n";
 
   for (auto i : follow) {
     s += i.first + "\n";
@@ -77,11 +97,11 @@ bool is_token(string a) {
 }
 
 bool parsed_info::add_firsts(string name, rule& r, int idx) {
-  string a = r.terms[idx];
+  string a = r.terms[idx].name;
   bool changed = false;
   bool eps = false;
 
-  if (is_token(a)) {
+  if (r.terms[idx].is_token) {
     if (first[name].count(a) == 0) {
       first[name].insert(a);
       return true;
@@ -126,14 +146,14 @@ void parsed_info::gen_first() {
           }
           continue;
         }
-        changed = add_firsts(name, rule, 0);
+        changed |= add_firsts(name, rule, 0);
       }
     }
   }
 }
 
 void parsed_info::gen_follow() {
-  follow["start"].insert("$");
+  follow["start"].insert("$"); 
   bool changed = true;
 
   while (changed) {
@@ -143,20 +163,20 @@ void parsed_info::gen_follow() {
       
       for (auto rule : g.second) {
         for (int i = 0; i < (int)rule.terms.size(); ++i) {
-          if (is_token(rule.terms[i])) {
+          if (rule.terms[i].is_token) {
             continue;
           }
           int j = i + 1;
           for (j; j < (int)rule.terms.size(); ++j) {
-            if (is_token(rule.terms[j]))
+            if (rule.terms[j].is_token)
               break;
-            if (follow[rule.terms[j]].count("") == 0) 
+            if (follow[rule.terms[j].name].count("") == 0) 
               break;
           }
           if (j == (int)rule.terms.size()) {
             for (auto elem : follow[name]) {
-              if (follow[rule.terms[i]].count(elem) == 0) {
-                follow[rule.terms[i]].insert(elem);
+              if (follow[rule.terms[i].name].count(elem) == 0) {
+                follow[rule.terms[i].name].insert(elem);
                 changed = true;
               }
             }
@@ -164,7 +184,7 @@ void parsed_info::gen_follow() {
           if (i + 1 == (int)rule.terms.size()) {
             continue;
           }
-          changed |= add_follows(rule.terms[i], rule, i + 1);
+          changed |= add_follows(rule.terms[i].name, rule, i + 1);
         }
       }
     }
@@ -174,14 +194,14 @@ void parsed_info::gen_follow() {
 bool parsed_info::add_follows(string name, rule& r, int idx) {
   bool changed = false;
   bool eps = false;
-  if (is_token(r.terms[idx])) {
-    if (follow[name].count(r.terms[idx]) == 0) {
-      follow[name].insert(r.terms[idx]);
+  if (r.terms[idx].is_token) {
+    if (follow[name].count(r.terms[idx].name) == 0) {
+      follow[name].insert(r.terms[idx].name);
       changed = true;
     }
     return changed;
   }
-  for (auto f : first[r.terms[idx]]) {
+  for (auto f : first[r.terms[idx].name]) {
     if (f != "") {
       if (follow[name].count(f) == 0) {
         follow[name].insert(f);

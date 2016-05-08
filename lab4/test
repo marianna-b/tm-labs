@@ -3,14 +3,15 @@
 %token %<void%> AAA
 %token %<void%> BBB
 
-%type %<void%> aaaa
-%type %<void%> bbbb
+%type %<void%> aaaa[ %<void%> %<int%>]
+%type %<void%> bbbb[]
+%type %<void%> start[%<void%>]
 
 %%
 
 start:
-AAA aaaa AAA {*&(*&$)#(@*#@Q>}|
-AAA aaaa AAA bbbb {*&(*&$)#(@*#@Q>}|;
+AAA aaaa [_s1 _s3 _h45] AAA {*&(*&$)#(@*#@Q>}|
+AAA aaaa [_s1 _s3 _h45] AAA bbbb {*&(*&$)#(@*#@Q>}|;
 
 aaaa:
 AAA bbbb AAA {*&(*&$)#(@*#@Q>}
