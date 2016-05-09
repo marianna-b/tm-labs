@@ -134,6 +134,8 @@ string parsed_info::generate_file() {
   for (auto r : (*grammar)) {
     s += gen_function(r.first) + "\n";
   }
+  if ((int)end->size() > 3)
+    s += (*end).substr(2, (int)(*end).size() - 4);
   return s;
 }
 
@@ -216,7 +218,10 @@ string parsed_info::gen_function(string name) {
       }
     }
     c += "\n    " + rules[i].code.substr(2, rules[i].code.size() - 4);
-    c += "\n    return res;";
+    if (res == "%<void%>")
+      c += "\n    return;";
+    else
+      c += "\n    return res;";
     if (has_eps) {
       eps_handling = c;
     }
@@ -269,7 +274,8 @@ string parsed_info::generate_header() {
   string s = "";
   s += "#ifndef PARSER_H\n";
   s += "#define PARSER_H\n";
-  s += (*begin).substr(2, (*begin).size() - 4);
+  if ((int)begin->size() > 3)
+    s += (*begin).substr(2, (*begin).size() - 4);
   
   set<pair<string, string> > decl;
   for (auto tok : (*tokens)) {

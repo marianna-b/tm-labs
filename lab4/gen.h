@@ -29,6 +29,7 @@ struct parsed_info {
   std::string generate();
   std::string generate_file();
   std::string generate_header();
+  std::string verify();
   
   ~parsed_info();
 private:

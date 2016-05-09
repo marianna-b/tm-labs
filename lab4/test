@@ -3,21 +3,21 @@
 %token %<int%> : _A AAA
 %token %<void%> BBB
 
-%type %<int%> aaaa[ %<void%> %<int%>]
+%type %<int%> aaaa[ %<bool%> %<int%>]
 %type %<void%> bbbb[]
-%type %<int%> start[%<void%>]
+%type %<int%> start[%<int%>]
 
 %%
 
 start:
-AAA aaaa [_s1 _s3 _h45] AAA bbbb {*&(*&$)#(@*#@Q>}|;
+bbbb aaaa [_s1] AAA bbbb ${*&(*&)#(@*#@Q>$}|;
 
 aaaa:
-AAA bbbb AAA {*&(*&$)#(@*#@Q>}
-| bbbb {ksjd;lfks kjfd;lsadkf } |;
+AAA bbbb AAA ${*&(*&)#(@*#@Q>$}
+| bbbb ${ksjd;lfks kjfd;lsadkf $} |;
 
 bbbb:
-BBB { kj;lkj;lkj;lkj }
-| {dalskjf;lsdkfj}|;
+BBB ${ kj;lkj;lkj;lkj $}
+| ${dalskjf;lsdkfj$}|;
 %%
 
