@@ -1,6 +1,7 @@
 #ifndef PARSER_H
 #define PARSER_H
 #include <string>
+
 extern std::string _STR;
 
 enum token_symb {

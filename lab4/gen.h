@@ -39,10 +39,13 @@ private:
   std::map<std::string, std::vector<rule> > *grammar;
   std::map<std::string, std::set<std::string> > first;
   std::map<std::string, std::set<std::string> > follow;
+  std::set<std::pair<std::string, std::string> > token_decl;
   std::string gen_enum();
   std::string gen_func_list();
+  std::string gen_parse_struct();
   std::string gen_function(std::string);
   void gen_first();
+  void gen_token_decl();
   void gen_follow();
   bool add_firsts(std::string, rule&, int);
   bool add_follows(std::string, rule&, int);

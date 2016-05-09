@@ -148,3 +148,13 @@ bool parsed_info::add_follows(string name, rule& r, int idx) {
   return changed;
 }
 
+void parsed_info::gen_token_decl() {
+  for (auto tok : (*tokens)) {
+    string name = tok.second.second;
+    string type = tok.second.first.substr(2, (int)tok.second.first.size() - 4);
+    if (name != "" && type != "void") {
+      token_decl.insert(make_pair(name, type));
+    } 
+  }
+}
+

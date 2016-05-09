@@ -22,19 +22,6 @@ rule::rule(vector<token> t, string c) {
   code = c;
 }
 
-string rule::show() {
-  string s = "";
-  for (auto i : terms) {
-    s += i.name + " [";
-    for (auto j : i.arg) {
-      s += j + " ";
-    }
-    s += "] ";
-  }
-  s += code;
-  return s;
-}
-
 parsed_info::parsed_info(string* b, string* e, map<string, pair<string, string> >* tok, map<string, pair<string, vector<string> > >* nont, map<string, vector<rule> >* gr) {
   begin = b;
   end = e;
@@ -43,48 +30,7 @@ parsed_info::parsed_info(string* b, string* e, map<string, pair<string, string> 
   grammar = gr;
   gen_first();
   gen_follow();
-}
-
-string parsed_info::generate() {
-  string s = "";
-  s += *begin + "\n";
-  s += *end + "\n";
-
-  for (auto i : (*tokens)) 
-    s += i.first + " " + i.second.first + " " + i.second.second + "\n";
-  for (auto i : (*nonterm)) {
-    s += i.first + " " + i.second.first + "\n";
-    s += "[";
-    for (auto j : i.second.second)
-      s += j + " ";
-    s += "]\n";
-  }
-  for (auto i : (*grammar)) {
-    s += i.first + "\n";
-    for (auto j : i.second) 
-      s += j.show() + "\n";
-  }
-
-  s += "\n\nfirst\n";
-
-  for (auto i : first) {
-    s += i.first + "\n";
-    for (auto j : i.second) 
-      if (j != "")
-        s += j + "\n";
-      else
-        s += "eps\n"; 
-  }
-
-  s += "\nfollow\n";
-
-  for (auto i : follow) {
-    s += i.first + "\n";
-    for (auto j : i.second) 
-      s += j + "\n";
-  }
-  
-  return s;
+  gen_token_decl();
 }
 
 string to_str(int x) {
@@ -93,8 +39,7 @@ string to_str(int x) {
   return convert.str();
 }
 
-
-string parsed_info::generate_file() {
+string header() {
   string s = "";
 
   s += "#include ";
@@ -103,23 +48,12 @@ string parsed_info::generate_file() {
   s += '"';
   s += "\n";
   s += "\n";
-
-
-  s += "\n";
-  s += "\n";
   
-  set<pair<string, string> > decl;
-  for (auto tok : (*tokens)) {
-    string name = tok.second.second;
-    string type = tok.second.first.substr(2, (int)tok.second.first.size() - 4);
-    if (name != "" && type != "void") {
-      decl.insert(make_pair(name, type));
-    } 
-  }
-  
-  for (auto tok : decl) {
-    s += tok.second + " " + tok.first + ";\n";
-  }
+  return s;
+}
+
+string parser_body() {
+  string s = "";
   s += "\n";
   s += "extern int yylex();";
   s += "\n";
@@ -130,15 +64,51 @@ string parsed_info::generate_file() {
   s += "void parser::next(){\n";
   s += "  curr = yylex();\n";
   s += "}\n\n";
+  return s;
+}
 
+string parsed_info::generate_file() {
+  string s = header();
+  // Global variables for lexer
+  for (auto tok : token_decl) {
+    s += tok.second + " " + tok.first + ";\n";
+  }
+  // Some parser functions
+  s += parser_body();
+  // Functions for each nonterminal
   for (auto r : (*grammar)) {
     s += gen_function(r.first) + "\n";
   }
+  // Ending code
   if ((int)end->size() > 3)
     s += (*end).substr(2, (int)(*end).size() - 4);
   return s;
 }
 
+string parsed_info::generate_header() {
+  string s = "";
+  s += "#ifndef PARSER_H\n";
+  s += "#define PARSER_H\n";
+  // Beginning code
+  if ((int)begin->size() > 3)
+    s += (*begin).substr(2, (*begin).size() - 4);
+  s += "\n";
+  // Externing global variables for lexer
+  for (auto tok : token_decl) {
+    s += "extern " + tok.second + " " + tok.first + ";\n";
+  }
+  
+  s += "\n";
+  // Enum for lexer
+  s += gen_enum() + "\n";
+
+  // Struct for parser (function for nonterminals declarations)
+  s += gen_parse_struct();
+  s += "#endif";
+  return s;
+}
+
+// Generating check for current "symbol"
 string gen_if(set<string> s) {
   string b = "if (";
   bool is_first = true;
@@ -157,88 +127,6 @@ string gen_if(set<string> s) {
   return b;
 }
 
-string parsed_info::gen_function(string name) {
-  string s = "";
-  string res = (*nonterm)[name].first;
-  vector<string> arg = (*nonterm)[name].second;
-  vector<rule> rules = (*grammar)[name];
-  s += res.substr(2, (int)res.size() - 4) + " ";
-  s += "parser::" + name + "(";
-  for (int j = 0; j < arg.size(); j++) {
-    s += "  ";
-    s += arg[j].substr(2, (int)arg[j].size() - 4) + " _h" + to_str(j + 1);
-    if (j + 1 < arg.size()) {
-      s += ", ";
-    }
-  }
-  s += ") {\n";
-  s += "  " + res.substr(2, (int)res.size() - 4) + " res;";
-  string eps_handling = "";
-  for (int i = 0; i < (int)rules.size(); i++) {
-    bool has_eps = false;
-    set<string> f = get_first(rules[i].terms);
-    if (f.count("") != 0) {
-      has_eps = true;
-      f.erase("");
-    }
-    
-    string b = gen_if(f);
-    string c = "";
-    for (int j = 0; j < (int)rules[i].terms.size(); j++) {
-      token t = rules[i].terms[j];
-      if (t.is_token) {
-        string type = (*tokens)[t.name].first.substr(2, (*tokens)[t.name].first.size() - 4);
-        string name = (*tokens)[t.name].second;
-        c += "    if (curr != " + t.name + ")\n";
-        c += "      throw " + t.name + ";\n";
-        if (type != "void") {
-          c += "    ";
-          c += type + " _s" + to_str(j + 1) + " = " + name + ";\n";
-        }
-        c += "    ";
-        c += "next();\n";
-      } else {
-        string res = (*nonterm)[t.name].first.substr(2, (*nonterm)[t.name].first.size() - 4);
-        vector <string> arg = t.arg;
-        if (res != "void") {
-          c += "    ";
-          c += res + " _s" + to_str(j + 1) + " = " + t.name + "(";
-        } else {
-          c += "    ";
-          c += t.name + "(";
-        } 
-        for (int k = 0; k < (int)arg.size(); ++k) {
-          if (k + 1 < (int)arg.size()) {
-            c += arg[k] + ", ";
-          } else {
-            c += arg[k];
-          }
-        }
-        c +=  ");\n";
-      }
-    }
-    c += "\n    " + rules[i].code.substr(2, rules[i].code.size() - 4);
-    if (res == "%<void%>")
-      c += "\n    return;";
-    else
-      c += "\n    return res;";
-    if (has_eps) {
-      eps_handling = c;
-    }
-    if (!f.empty()) {
-      s += "\n  " + b + " {\n" + c + "\n  }\n";
-    }
-
-  }
-  if (eps_handling.size() > 0) {
-    string a = gen_if(follow[name]);
-    s += "\n  " + a + " {\n" + eps_handling + "\n  }\n";
-  }
-  s += "  throw curr;\n";
-  s += "}\n";
-  return s;
-}
-
 string parsed_info::gen_enum() {
   string s = "";
   s += "enum token_symb {\n";
@@ -251,61 +139,153 @@ string parsed_info::gen_enum() {
   return s;
 }
 
+// Declarations for functions for nonterminals
 string parsed_info::gen_func_list() {
   string s = "";
   for (auto i : (*nonterm)) {
     string name = i.first;
     string res = i.second.first;
     vector<string> arg = i.second.second;
+
     s += "  " + res.substr(2, (int)res.size() - 4) + " ";
     s += name + "(";
+
     for (int j = 0; j < arg.size(); j++) {
-      s += arg[j].substr(2, (int)arg[j].size() - 4) + " _h" + to_str(j + 1);
-      if (j + 1 < arg.size()) {
+      s += arg[j].substr(2, (int)arg[j].size() - 4);
+      if (j + 1 < arg.size())
         s += ", ";
-      }
     }
     s += ");\n";
   }
   return s;
 }
 
-string parsed_info::generate_header() {
+
+string parsed_info::gen_parse_struct() {
   string s = "";
-  s += "#ifndef PARSER_H\n";
-  s += "#define PARSER_H\n";
-  if ((int)begin->size() > 3)
-    s += (*begin).substr(2, (*begin).size() - 4);
-  
-  set<pair<string, string> > decl;
-  for (auto tok : (*tokens)) {
-    string name = tok.second.second;
-    string type = tok.second.first.substr(2, (int)tok.second.first.size() - 4);
-    if (name != "" && type != "void") {
-      decl.insert(make_pair(name, type));
-    } 
-  }
-  
-  for (auto tok : decl) {
-    s += "extern " + tok.second + " " + tok.first + ";\n";
-  }
-  
-  
-  s += "\n";
-  s += gen_enum() + "\n";
-  
   s += "struct parser {\n";
   s += "  int curr;\n";
   s += "  parser();\n";
   s += "  void next();\n";
-
   s += gen_func_list() + "\n";
-
   s += "};\n";
-  s += "#endif";
   return s;
 }
-  
+
+string token_handling(string name, string tname, string type, int j) {
+  string c = "";
+  // Check if correct token
+  c += "    if (curr != " + tname + ")\n";
+  c += "      throw " + tname + ";\n";
+  // Check if has attribute
+  if (type != "void") {
+    c += "    ";
+    // Declare a variable and copy attribute value from lexers global
+    c += type + " _s" + to_str(j + 1) + " = " + name + ";\n";
+  }
+  c += "    ";
+  // Move to next token
+  c += "next();\n";
+  return c;
+}
+
+string nonterm_handling(string res, int j, string tname, vector <string> arg) {
+  string c = "";
+  // Check if has synt attribute and assign result of function to variable if so
+  if (res != "void") {
+    c += "    ";
+    c += res + " _s" + to_str(j + 1) + " = " + tname + "(";
+  } else {
+    c += "    ";
+    c += tname + "(";
+  }
+  // Add list of arguments
+  for (int k = 0; k < (int)arg.size(); ++k) {
+    if (k + 1 < (int)arg.size()) {
+      c += arg[k] + ", ";
+    } else {
+      c += arg[k];
+    }
+  }
+  c +=  ");\n";
+  return c;
+}
+
+string parsed_info::gen_function(string name) {
+  string s = "";
+  string res = (*nonterm)[name].first;
+  vector<string> arg = (*nonterm)[name].second;
+  vector<rule> rules = (*grammar)[name];
+  s += res.substr(2, (int)res.size() - 4) + " ";
+  // Generating function header
+  s += "parser::" + name + "(";
+  for (int j = 0; j < (int)arg.size(); j++) {
+    s += "  ";
+    s += arg[j].substr(2, (int)arg[j].size() - 4) + " _h" + to_str(j + 1);
+    if (j + 1 < (int)arg.size()) {
+      s += ", ";
+    }
+  }
+  s += ") {\n";
+
+  // Declare variable for synt attributes
+  if (res != "%<void%>")
+    s += "  " + res.substr(2, (int)res.size() - 4) + " res;";
+
+  // Declaring if clauses for different rules
+  for (int i = 0; i < (int)rules.size(); i++) {
+    // Check if first contains eps
+    set<string> f = get_first(rules[i].terms);
+    if (f.count("") != 0) {
+      f.erase("");
+      // Add follows to set of tokens if contains eps
+      for (auto elem : follow[name]) {
+        f.insert(elem);
+      }
+    }
+    
+    // Generate if statement 
+    string b = gen_if(f);
+    string c = "";
+    
+    for (int j = 0; j < (int)rules[i].terms.size(); j++) {
+      token t = rules[i].terms[j];
+      if (t.is_token) {
+        string type = (*tokens)[t.name].first.substr(2, (*tokens)[t.name].first.size() - 4);
+        string name = (*tokens)[t.name].second;
+
+        // Handling a token in rule
+        c += token_handling(name, t.name, type, j);
+      } else {
+        string res = (*nonterm)[t.name].first.substr(2, (*nonterm)[t.name].first.size() - 4);
+        vector <string> arg = t.arg;
+
+        // Handling nonterminal in a rule by invoking function for it 
+        c += nonterm_handling(res, j, t.name, arg);
+      }
+    }
+    
+    // Add attribute computation
+    c += "\n    " + rules[i].code.substr(2, rules[i].code.size() - 4);
+
+    // Return statement
+    if (res == "%<void%>")
+      c += "\n    return;";
+    else
+      c += "\n    return res;";
+
+    // Check if set of tokens is not empty
+    if (!f.empty()) {
+      s += "\n  " + b + " {\n" + c + "\n  }\n";
+    }
+
+  }
+  // Throwing exception if no rules match
+  s += "  throw curr;\n";
+  s += "}\n";
+  return s;
+}
+
 parsed_info::~parsed_info() {
   delete begin;
   delete end;

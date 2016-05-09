@@ -2,6 +2,7 @@
 #define PARSER_H
 #include <string>
 #include "tree.h"
+
 extern std::string _STR;
 
 enum token_symb {

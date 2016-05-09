@@ -1,7 +1,5 @@
 #include "parser.h"
 
-
-
 std::string _STR;
 
 extern int yylex();
@@ -261,14 +259,7 @@ std::string parser::list_expr() {
 
 std::string parser::start() {
   std::string res;
-  if ((curr == ASSIGN) || (curr == IF) || (curr == IFELSE) || (curr == PRINT)) {
-    std::string _s1 = list_expr();
-
-     res = _s1; 
-    return res;
-  }
-
-  if ((curr == 0)) {
+  if ((curr == 0) || (curr == ASSIGN) || (curr == IF) || (curr == IFELSE) || (curr == PRINT)) {
     std::string _s1 = list_expr();
 
      res = _s1; 

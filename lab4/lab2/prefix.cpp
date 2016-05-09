@@ -1,7 +1,5 @@
 #include "parser.h"
 
-
-
 std::string _STR;
 
 extern int yylex();

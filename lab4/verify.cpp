@@ -73,3 +73,58 @@ string parsed_info::verify() {
   }
   return "";
 }
+
+string rule::show() {
+  string s = "";
+  for (auto i : terms) {
+    s += i.name + " [";
+    for (auto j : i.arg) {
+      s += j + " ";
+    }
+    s += "] ";
+  }
+  s += code;
+  return s;
+}
+
+string parsed_info::generate() {
+  string s = "";
+  s += *begin + "\n";
+  s += *end + "\n";
+
+  for (auto i : (*tokens)) 
+    s += i.first + " " + i.second.first + " " + i.second.second + "\n";
+  for (auto i : (*nonterm)) {
+    s += i.first + " " + i.second.first + "\n";
+    s += "[";
+    for (auto j : i.second.second)
+      s += j + " ";
+    s += "]\n";
+  }
+  for (auto i : (*grammar)) {
+    s += i.first + "\n";
+    for (auto j : i.second) 
+      s += j.show() + "\n";
+  }
+
+  s += "\n\nfirst\n";
+
+  for (auto i : first) {
+    s += i.first + "\n";
+    for (auto j : i.second) 
+      if (j != "")
+        s += j + "\n";
+      else
+        s += "eps\n"; 
+  }
+
+  s += "\nfollow\n";
+
+  for (auto i : follow) {
+    s += i.first + "\n";
+    for (auto j : i.second) 
+      s += j + "\n";
+  }
+  
+  return s;
+}

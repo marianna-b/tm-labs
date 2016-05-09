@@ -10,7 +10,7 @@ int main( int argc, char** argv)
     return 1;
   yyparse();
   std::cout << result->verify() << std::endl;
-  /*
+  
   std::ofstream file;
   file.open(argv[1]);
   file << result->generate_file();
@@ -20,6 +20,6 @@ int main( int argc, char** argv)
   header.open(argv[2]);
   header << result->generate_header();
   header.close();
-  */
+  
   return 0;
 }
