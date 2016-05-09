@@ -24,8 +24,8 @@ _(h|s)[0-9]+            SAVE_TOKEN; return ARG;
 _[A-Z][A-Z0-9_]*        SAVE_TOKEN; return GLOB;
 "%<"[^%]*"%>"           SAVE_TOKEN; return TYPE_NAME;
 "%{"([^%]|[\t\n])*"%}"  SAVE_TOKEN; return INSERT;
-"{"([^}]|[\n])*"}"      SAVE_TOKEN; return CODE;
-.                       std::cout << "Unknown token! " << std::string(yytext, yyleng); yyterminate();                     
+"${"([^\$]|[\n])*"$}"    SAVE_TOKEN; return CODE;
+.                       std::cout << "Unknown token! " << std::string(yytext, yyleng) << std::endl; yyterminate();                     
 
 %%
  

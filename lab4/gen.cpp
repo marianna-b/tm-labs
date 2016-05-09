@@ -215,7 +215,7 @@ string parsed_info::gen_function(string name) {
         c +=  ");\n";
       }
     }
-    c += "\n    " + rules[i].code.substr(1, rules[i].code.size() - 2);
+    c += "\n    " + rules[i].code.substr(2, rules[i].code.size() - 4);
     c += "\n    return res;";
     if (has_eps) {
       eps_handling = c;
@@ -271,13 +271,19 @@ string parsed_info::generate_header() {
   s += "#define PARSER_H\n";
   s += (*begin).substr(2, (*begin).size() - 4);
   
+  set<pair<string, string> > decl;
   for (auto tok : (*tokens)) {
     string name = tok.second.second;
     string type = tok.second.first.substr(2, (int)tok.second.first.size() - 4);
     if (name != "" && type != "void") {
-      s += "extern " + type + " " + name + ";\n";
+      decl.insert(make_pair(name, type));
     } 
   }
+  
+  for (auto tok : decl) {
+    s += "extern " + tok.second + " " + tok.first + ";\n";
+  }
+  
   
   s += "\n";
   s += gen_enum() + "\n";
