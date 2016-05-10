@@ -10,7 +10,7 @@
 %%
 
 start:
-AAA aaaa [_s1 _h1] AAA bbbb ${*&(*&)#(@*#@Q>$}|;
+AAA aaaa [_s1 _h1] AAA bbbb BBB ${*&(*&)#(@*#@Q>$}|;
 
 aaaa:
 AAA bbbb AAA ${*&(*&)#(@*#@Q>$}

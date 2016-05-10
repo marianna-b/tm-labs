@@ -1,7 +1,8 @@
 #include "gen.h"
 #include <iostream>
+#include <sstream>
 using namespace std;
-
+extern string to_str(int);
 
 string parsed_info::verify() {
 
@@ -71,6 +72,53 @@ string parsed_info::verify() {
       }
     }
   }
+  /*
+  for (auto g : (*grammar)) {
+    string name = g.first;
+    cout << name << endl;
+    for (int i = 0; i < (int)g.second.size(); i++) {
+      cout << i << endl;
+      set<string> f1 = get_first(g.second[i].terms);
+      for (auto elem : f1)
+        cout << elem << " ";
+      cout << endl;
+    }
+   }
+*/  
+
+  for (auto g : (*grammar)) {
+    string name = g.first;
+    for (int i = 0; i < (int)g.second.size(); i++) {
+      for (int j = i + 1; j < (int)g.second.size(); ++j) {
+        set<string> f1 = get_first(g.second[i].terms);
+        set<string> f2 = get_first(g.second[j].terms);
+        for (auto elem : f1) {
+          if (f2.count(elem) != 0) {
+            return "FIRSTs have non-empty intersection in: " + name + ", rules " + to_str(i + 1) + " and " + to_str(j + 1);
+          }
+        }
+        if (f1.count("") != 0) {
+          for (auto elem : follow[name]) {
+            if (f2.count(elem) != 0) {
+              string s = "FOLLOW for " + name + " has non-empty intersection with FIRST for rule " + to_str(i + 1);
+              s += "\nCause: eps in rule " + to_str(j + 1);
+              return s;
+            }
+          }
+        }
+        if (f2.count("") != 0) {
+          for (auto elem : follow[name]) {
+            if (f1.count(elem) != 0) {
+              string s = "FOLLOW for: " + name + " has non-empty intersection with FIRST for rule " + to_str(j + 1);
+              s += "\nCause: eps in rule " + to_str(j + 1);
+              return s;
+            }
+          }
+        }
+      }
+    }
+  }
+  
   return "";
 }
 
