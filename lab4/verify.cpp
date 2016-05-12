@@ -94,14 +94,13 @@ string parsed_info::verify() {
         set<string> f2 = get_first(g.second[j].terms);
         for (auto elem : f1) {
           if (f2.count(elem) != 0) {
-            return "FIRSTs have non-empty intersection in: " + name + ", rules " + to_str(i + 1) + " and " + to_str(j + 1);
+            return "FIRSTs have non-empty intersection in: " + name + ": " + elem;
           }
         }
         if (f1.count("") != 0) {
           for (auto elem : follow[name]) {
             if (f2.count(elem) != 0) {
-              string s = "FOLLOW for " + name + " has non-empty intersection with FIRST for rule " + to_str(i + 1);
-              s += "\nCause: eps in rule " + to_str(j + 1);
+              string s = "FOLLOW for " + name + " has non-empty intersection with FIRST: " + elem;
               return s;
             }
           }
@@ -109,8 +108,7 @@ string parsed_info::verify() {
         if (f2.count("") != 0) {
           for (auto elem : follow[name]) {
             if (f1.count(elem) != 0) {
-              string s = "FOLLOW for: " + name + " has non-empty intersection with FIRST for rule " + to_str(j + 1);
-              s += "\nCause: eps in rule " + to_str(j + 1);
+              string s = "FOLLOW for: " + name + " has non-empty intersection with FIRST: " + elem;
               return s;
             }
           }

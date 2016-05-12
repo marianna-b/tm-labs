@@ -1,4 +1,6 @@
 %{#include <string>
+#include <vector>
+#include <iostream>
 #include "tree.h"
 %}
 
@@ -7,31 +9,32 @@
 %token %<void%> SEMICOLON  
 %token %<void%> DEREF 
 
-%type %<tree%> start[]
-%type %<tree%> decl[]
-%type %<tree%> list[]
-%type %<tree%> list_end[]
-%type %<tree%> var[]
+%type %<std::vector<std::pair<std::string, std::string> > %> start[]
+%type %<std::vector<std::pair<std::string, std::string> > %> decl[]
+%type %<std::vector<std::pair<std::string, std::string> > %> list[%<std::string%>]
+%type %<std::vector<std::pair<std::string, std::string> > %> list_end[%<std::string%>]
+%type %<std::pair<std::string, std::string>%> var[%<std::string%>]
 
 %%
 
 start:
-${ res = tree("start"); $}
-| decl start ${ res = tree("start"); res.add_child(_s1); res.add_child(_s2); $}|;
+${ res = std::vector<std::pair<std::string, std::string> >();  $}
+| decl start ${ res = _s1; res.insert(res.end(), _s2.begin(), _s2.end());  $}|;
 
 decl:
-VAR list SEMICOLON ${ res = tree("decl"); res.add_child(_s1); res.add_child(_s2); $} |;
+VAR list[_s1] SEMICOLON ${ res = _s2; $} |;
 
 var:
-VAR ${ res = tree("name: " + _s1); $}
-| DEREF var ${  res = tree("var"); res.add_child(tree("*")); res.add_child(_s2); $}|;
+VAR ${ res = std::pair<std::string, std::string>(_h1, _s1); $}
+| DEREF var[_h1] ${ res = std::pair<std::string, std::string>(_s2.first + "*", _s2.second); $}
+|; 
 
 list:
-var list_end ${ res = tree("list"); res.add_child(_s1); res.add_child(_s2); $} |;
+var[_h1] list_end[_h1] ${ res = _s2; std::cout << _s1.first << " : " << _s1.second << std::endl; $} |;
 
 list_end:
-${ res = tree("list_end"); $}
-| COMMA list ${res = tree("list_end"); res.add_child(tree(",")); res.add_child(_s2); $} |;
+${ res = std::vector<std::pair<std::string, std::string> >(); $}
+| COMMA list[_h1] ${res = _s2; $} |;
 
 %%
 

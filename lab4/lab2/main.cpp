@@ -30,11 +30,12 @@ int main(int argc, char** argv) {
   for (int i = 0; i < TESTC; ++i) {
     try {
       parser p;
-      tree t = p.start();
-      t.show(argc, argv);
-      cout << tests[i] << " OK" << endl; 
+      vector <pair <string, string> > t = p.start();
+      /* for (auto elem : t) {
+        cout << elem.first << " : " << elem.second << endl;
+        }*/
     } catch (int c) {
-      cout << tests[i] << " Invalid char " << c << endl;
+      cout << " Invalid char " << c << endl;
     }
   }
   return 0;

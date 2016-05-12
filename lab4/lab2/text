@@ -1,1 +1,1 @@
-int a, *b, ***c, d; int a, *b, * * *c , d;
+int a, *b, ***c, d; int e, *f, * * *g , h;

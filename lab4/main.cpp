@@ -6,9 +6,11 @@ extern parsed_info* result;
 
 int main( int argc, char** argv)
 {
-  if (argc > 3)
+  if (argc < 3)
     return 1;
   yyparse();
+  if (result == 0)
+    return 0;
   std::cout << result->verify() << std::endl;
     
   std::ofstream file;

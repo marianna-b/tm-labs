@@ -11,83 +11,83 @@ void parser::next(){
   curr = yylex();
 }
 
-tree parser::decl() {
-  tree res;
+std::vector<std::pair<std::string, std::string> >  parser::decl() {
+  std::vector<std::pair<std::string, std::string> >  res;
   if ((curr == VAR)) {
     if (curr != VAR)
       throw VAR;
     std::string _s1 = _STR;
     next();
-    tree _s2 = list();
+    std::vector<std::pair<std::string, std::string> >  _s2 = list(_s1);
     if (curr != SEMICOLON)
       throw SEMICOLON;
     next();
 
-     res = tree("decl"); res.add_child(_s1); res.add_child(_s2); 
+     res = _s2; 
     return res;
   }
   throw curr;
 }
 
-tree parser::list() {
-  tree res;
+std::vector<std::pair<std::string, std::string> >  parser::list(  std::string _h1) {
+  std::vector<std::pair<std::string, std::string> >  res;
   if ((curr == DEREF) || (curr == VAR)) {
-    tree _s1 = var();
-    tree _s2 = list_end();
+    std::pair<std::string, std::string> _s1 = var(_h1);
+    std::vector<std::pair<std::string, std::string> >  _s2 = list_end(_h1);
 
-     res = tree("list"); res.add_child(_s1); res.add_child(_s2); 
+     res = _s2; std::cout << _s1.first << " : " << _s1.second << std::endl; 
     return res;
   }
   throw curr;
 }
 
-tree parser::list_end() {
-  tree res;
+std::vector<std::pair<std::string, std::string> >  parser::list_end(  std::string _h1) {
+  std::vector<std::pair<std::string, std::string> >  res;
   if ((curr == COMMA)) {
     if (curr != COMMA)
       throw COMMA;
     next();
-    tree _s2 = list();
+    std::vector<std::pair<std::string, std::string> >  _s2 = list(_h1);
 
-    res = tree("list_end"); res.add_child(tree(",")); res.add_child(_s2); 
+    res = _s2; 
     return res;
   }
 
   if ((curr == SEMICOLON)) {
 
-     res = tree("list_end"); 
+     res = std::vector<std::pair<std::string, std::string> >(); 
     return res;
   }
   throw curr;
 }
 
-tree parser::start() {
-  tree res;
+std::vector<std::pair<std::string, std::string> >  parser::start() {
+  std::vector<std::pair<std::string, std::string> >  res;
   if ((curr == VAR)) {
-    tree _s1 = decl();
-    tree _s2 = start();
+    std::vector<std::pair<std::string, std::string> >  _s1 = decl();
+    std::vector<std::pair<std::string, std::string> >  _s2 = start();
 
-     res = tree("start"); res.add_child(_s1); res.add_child(_s2); 
+     res = _s1; res.insert(res.end(), _s2.begin(), _s2.end());  
     return res;
   }
 
   if ((curr == 0)) {
 
-     res = tree("start"); 
+     res = std::vector<std::pair<std::string, std::string> >();  
     return res;
   }
   throw curr;
 }
 
-tree parser::var() {
-  tree res;
+std::pair<std::string, std::string> parser::var(  std::string _h1) {
+  std::pair<std::string, std::string> res;
   if ((curr == DEREF)) {
     if (curr != DEREF)
       throw DEREF;
     next();
-    tree _s2 = var();
+    std::pair<std::string, std::string> _s2 = var(_h1);
 
-      res = tree("var"); res.add_child(tree("*")); res.add_child(_s2); 
+     res = std::pair<std::string, std::string>(_s2.first + "*", _s2.second); 
     return res;
   }
 
@@ -97,7 +97,7 @@ tree parser::var() {
     std::string _s1 = _STR;
     next();
 
-     res = tree("name: " + _s1); 
+     res = std::pair<std::string, std::string>(_h1, _s1); 
     return res;
   }
   throw curr;
